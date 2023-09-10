@@ -1,24 +1,31 @@
 #include<iostream>
 using namespace std;
+#include<stack>
 
-int sum = 0;
+typedef struct chess
+{
+	int chess_row;
+	int chess_column;
+}chess;
 
-void Print(int board[8][8],int num)
+void Print(int board[8][8])
 {
 	int i = 0; int j = 0;
-	cout << "NO." << num << ":  ";
 	for (i = 0; i < 8; i++)
 	{
 		for (j = 0; j < 8; j++)
 		{
-			if (board[i][j] == 1)
+			if (board[i][j] == 0)
 			{
-				cout << j << "  ";
+				cout << ".";
+			}
+			else
+			{
+				cout << "#";
 			}
 		}
+		cout << endl;
 	}
-	cout << endl;
-	system("pause");
 }
 
 int judge(int a, int b, int board[8][8])
@@ -71,43 +78,87 @@ int judge(int a, int b, int board[8][8])
 	return 1;
 }
 
-void Queenway(int num,int column,int board[8][8])//num:行数，column:列数,board： 棋盘 ，实现棋盘
-{
-	int j = 0;
-	if (num == 8)
-	{
-		sum++;
-		Print(board, sum);
-		return;
-	}
-	for (j = 0; j < 8; j++)
-	{
-		if (judge(num, j, board) == 1)//满足条件进行插入
-		{
-			board[num][j] = 1;
-			Queenway(num + 1, 0,board);
-		}
-		board[num][j] = 0;
-	}
-}
-
 int main()
 {
-	int column = 0; int i = 0; int j = 0;
+	int row = 0; int column = 0;//第一个棋子的坐标
+	int num = 0;
+	int i = 0; int j = 0; //循环变量
+	int k = 0;
+	stack<chess> stk;//棋子栈
+	chess tmp = { 0 };
 	int board[8][8] = { 0 };
 	for (column = 0; column < 8; column++)
 	{
-		for (i = 0; i < 8; i++)//初始化棋盘
+		while (stk.size() != 0)//初始化棋盘
+		{
+			stk.pop();
+		}
+		for (i = 0; i < 8; i++)
 		{
 			for (j = 0; j < 8; j++)
 			{
 				board[i][j] = 0;
 			}
 		}
-		board[0][column] = 1;
-		Queenway(1,0, board);
-		
+		board[row][column] = 1;
+		tmp.chess_row = row;
+		tmp.chess_column = column;
+		stk.push(tmp);
+		for (i = 1; i < 8; i++)//进行棋盘算法
+		{
+			k = 0;
+			for (j = 0; j < 8; j++)
+			{
+				if (judge(i, j, board) != 0)//插入棋子
+				{
+					board[i][j] = 1;
+					tmp.chess_row = i;
+					tmp.chess_column = j;
+					stk.push(tmp);
+					k = 1;//标志位
+				}
+				if (stk.size() == 8 )//满足棋盘需求
+				{
+					k = 0;
+					num++;
+					Print(board);
+					system("pause");
+					do//进行递归
+					{
+						i =stk.top().chess_row;
+						j = stk.top().chess_column;
+						board[i][j] = 0;
+						stk.pop();
+						if (stk.size() == 0)//第一个棋子也无法满足需求，即不存在解
+						{
+							i = 8;
+							break;
+						}
+					} while (j >= 7);
+				}
+				if (k == 0 && i != row && j == 7)//无法继续进行插入
+				{
+					do
+					{
+						i = stk.top().chess_row;
+						j = stk.top().chess_column;
+						board[i][j] = 0;
+						stk.pop();
+						if (stk.size() == 0)//第一个棋子也无法满足需求，即不存在解
+						{
+							i = 8;
+							break;
+						}
+					} while (j >= 7);
+				}
+				if (i == 8)
+				{
+					break;
+				}
+			}
+		}
 	}
+	cout << "八皇后问题共有:" << num << "种解法" << endl;
 	system("pause");
 	return 0;
 }
